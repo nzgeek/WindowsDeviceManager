@@ -93,28 +93,28 @@ namespace WindowsDeviceManager
 
         public static DeviceInfoSet GetDevice(string deviceInstanceID, Guid classInterfaceId, bool presentDevices, bool currentProfile)
         {
-            return GetDevicesInternal(classInterfaceId, deviceInstanceID, presentDevices, currentProfile, GetClassDevsFlags.DeviceInterface);
+            return GetDevicesInternal(classInterfaceId, deviceInstanceID, presentDevices, currentProfile, GetClassDevsFlags.DIGCF_DEVICEINTERFACE);
         }
 
         #endregion
 
         private static DeviceInfoSet GetDevicesInternal(Guid deviceInterfaceId, string enumerator,
-            bool presentDevices, bool currentProfile, GetClassDevsFlags flags = GetClassDevsFlags.None)
+            bool presentDevices, bool currentProfile, GetClassDevsFlags flags = GetClassDevsFlags.DIGCF_NONE)
         {
             if (deviceInterfaceId == DeviceInterfaceClasses.All)
-                flags |= GetClassDevsFlags.AllClasses;
+                flags |= GetClassDevsFlags.DIGCF_ALLCLASSES;
 
             if (presentDevices)
-                flags |= GetClassDevsFlags.Present;
+                flags |= GetClassDevsFlags.DIGCF_PRESENT;
 
             if (currentProfile)
-                flags |= GetClassDevsFlags.Profile;
+                flags |= GetClassDevsFlags.DIGCF_PROFILE;
 
             var deviceInfoSet = SetupDi.GetClassDevs(deviceInterfaceId, enumerator, flags);
             if (deviceInfoSet != null)
                 return deviceInfoSet;
 
-            throw new DeviceManagerWindowsException("Unable to enumerate devices.");
+            throw ErrorHelpers.CreateException("Unable to enumerate devices.");
         }
     }
 }

@@ -24,55 +24,105 @@ namespace WindowsDeviceManager.Api
     public static partial class SetupDi
     {
         /// <summary>
-        /// SetupDiGetClassDevs
+        /// Invalid handle to a device information set.
         /// </summary>
-        [DllImport("Setupapi.dll", EntryPoint = "SetupDiGetClassDevsW", CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern IntPtr GetClassDevs(
-            [MarshalAs(UnmanagedType.LPStruct)] Guid deviceInterfaceId,
-            [MarshalAs(UnmanagedType.LPWStr)] string enumerator,
-            IntPtr hwndParent,
-            [MarshalAs(UnmanagedType.U4)] GetClassDevsFlags flags);
+        public static readonly IntPtr InvalidHandleValue = new IntPtr(-1);
+
+        /// <summary>
+        /// SetupDiCallClassInstaller
+        /// </summary>
+        [DllImport("Setupapi.dll", EntryPoint = "SetupDiCallClassInstaller", CharSet = CharSet.None, SetLastError = true)]
+        internal static extern bool CallClassInstaller(
+            [In, MarshalAs(UnmanagedType.U4)] DeviceInstallFunction installFunction,
+            [In] IntPtr hInfoList,
+            [In] ref SP_DEVINFO_DATA deviceInfoData);
 
         /// <summary>
         /// SetupDiDestroyDeviceInfoList
         /// </summary>
         [DllImport("Setupapi.dll", EntryPoint = "SetupDiDestroyDeviceInfoList", CharSet = CharSet.None, SetLastError = true)]
-        internal static extern bool DestroyDeviceInfoList(IntPtr hInfoList);
+        internal static extern bool DestroyDeviceInfoList(
+            [In] IntPtr hInfoList);
 
         /// <summary>
         /// SetupDiEnumDeviceInfo
         /// </summary>
         [DllImport("Setupapi.dll", EntryPoint = "SetupDiEnumDeviceInfo", CharSet = CharSet.None, SetLastError = true)]
         internal static extern bool EnumDeviceInfo(
-            IntPtr hInfoList,
-            int index,
-            ref SP_DEVINFO_DATA deviceInfoData);
+            [In] IntPtr hInfoList,
+            [In] int index,
+            [In, Out] ref SP_DEVINFO_DATA deviceInfoData);
+
+        /// <summary>
+        /// SetupDiEnumDeviceInterfaces
+        /// </summary>
+        [DllImport("Setupapi.dll", EntryPoint = "SetupDiEnumDeviceInterfaces", CharSet = CharSet.None, SetLastError = true)]
+        internal static extern bool EnumDeviceInterfaces(
+            [In] IntPtr hInfoList,
+            [In] ref SP_DEVINFO_DATA deviceInfoData,
+            [In, MarshalAs(UnmanagedType.LPStruct)] Guid interfaceClassId,
+            [In] int index,
+            [In, Out] ref SP_DEVICE_INTERFACE_DATA deviceInterfaceData);
+
+        /// <summary>
+        /// SetupDiGetClassDevs
+        /// </summary>
+        [DllImport("Setupapi.dll", EntryPoint = "SetupDiGetClassDevsW", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern IntPtr GetClassDevs(
+            [In, MarshalAs(UnmanagedType.LPStruct)] Guid deviceInterfaceId,
+            [In, MarshalAs(UnmanagedType.LPWStr)] string enumerator,
+            [In] IntPtr hwndParent,
+            [In, MarshalAs(UnmanagedType.U4)] GetClassDevsFlags flags);
+
+        /// <summary>
+        /// SetupDiGetDeviceInterfaceProperty
+        /// </summary>
+        [DllImport("Setupapi.dll", EntryPoint = "SetupDiGetDeviceInterfacePropertyW", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern bool GetDeviceInterfaceProperty(
+            [In] IntPtr hInfoList,
+            [In] ref SP_DEVICE_INTERFACE_DATA deviceInterfaceData,
+            [In] ref DEVPROPKEY devicePropertyKey,
+            [Out, MarshalAs(UnmanagedType.U4)] out DevicePropertyType devicePropertyType,
+            [In] IntPtr propertyBuffer,
+            [In] int propertyBufferSize,
+            [Out] out int requiredBufferSize,
+            [In] int flags);
 
         /// <summary>
         /// SetupDiGetDeviceProperty
         /// </summary>
         [DllImport("Setupapi.dll", EntryPoint = "SetupDiGetDevicePropertyW", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern bool GetDeviceProperty(
-            IntPtr hInfoList,
-            ref SP_DEVINFO_DATA deviceInfoData,
-            ref DEVPROPKEY devicePropertyKey,
-            [MarshalAs(UnmanagedType.U4)] out DevicePropertyType devicePropertyType,
-            IntPtr propertyBuffer,
-            int propertyBufferSize,
-            out int requiredBufferSize,
-            int flags);
+            [In] IntPtr hInfoList,
+            [In] ref SP_DEVINFO_DATA deviceInfoData,
+            [In] ref DEVPROPKEY devicePropertyKey,
+            [Out, MarshalAs(UnmanagedType.U4)] out DevicePropertyType devicePropertyType,
+            [In] IntPtr propertyBuffer,
+            [In] int propertyBufferSize,
+            [Out] out int requiredBufferSize,
+            [In] int flags);
 
         /// <summary>
         /// SetupDiGetDeviceRegistryProperty
         /// </summary>
         [DllImport("Setupapi.dll", EntryPoint = "SetupDiGetDeviceRegistryPropertyW", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern bool GetDeviceRegistryProperty(
-            IntPtr hInfoList,
-            ref SP_DEVINFO_DATA deviceInfoData,
-            [MarshalAs(UnmanagedType.U4)] DeviceRegistryPropertyCode propertyKey,
-            [MarshalAs(UnmanagedType.U4)] out DeviceRegistryPropertyType propertyType,
-            IntPtr propertyBuffer,
-            int propertyBufferSize,
-            out int requiredBufferSize);
+            [In] IntPtr hInfoList,
+            [In] ref SP_DEVINFO_DATA deviceInfoData,
+            [In, MarshalAs(UnmanagedType.U4)] DeviceRegistryPropertyCode propertyKey,
+            [Out, MarshalAs(UnmanagedType.U4)] out DeviceRegistryPropertyType propertyType,
+            [In] IntPtr propertyBuffer,
+            [In] int propertyBufferSize,
+            [Out] out int requiredBufferSize);
+
+        /// <summary>
+        /// SetupDiSetClassInstallParams
+        /// </summary>
+        [DllImport("Setupapi.dll", EntryPoint = "SetupDiSetClassInstallParamsW", CharSet = CharSet.Unicode, SetLastError = true)]
+        internal static extern bool SetClassInstallParams(
+            [In] IntPtr hInfoList,
+            [In] ref SP_DEVINFO_DATA deviceInfoData,
+            [In] IntPtr installParams,
+            [In] int installParamsSize);
     }
 }

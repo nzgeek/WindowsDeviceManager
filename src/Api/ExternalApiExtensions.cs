@@ -23,7 +23,7 @@ namespace WindowsDeviceManager.Api
     /// <summary>
     /// Provides a way for external code to access the values that are passed to the raw API functions.
     /// </summary>
-    public static class ExternalApi
+    public static class ExternalApiExtensions
     {
         /// <summary>
         /// Gets the handle that represents a <see cref="DeviceInfoSet"/> at the API level.
@@ -47,6 +47,18 @@ namespace WindowsDeviceManager.Api
         public static SP_DEVINFO_DATA ToApiValue(this DeviceInfo deviceInfo)
         {
             return deviceInfo.InfoData;
+        }
+
+        /// <summary>
+        /// Gets the structure that represents a <see cref="DeviceInterface"/> at the API level.
+        /// </summary>
+        /// <param name="deviceInterface">
+        /// The <see cref="DeviceInterface"/> being referenced in an API call.
+        /// </param>
+        /// <returns>A <see cref="SP_DEVICE_INTERFACE_DATA"/> structure.</returns>
+        public static SP_DEVICE_INTERFACE_DATA ToApiValue(this DeviceInterface deviceInterface)
+        {
+            return deviceInterface.InterfaceData;
         }
 
         /// <summary>

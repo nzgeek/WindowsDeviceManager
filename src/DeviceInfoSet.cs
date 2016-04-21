@@ -18,9 +18,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WindowsDeviceManager.Api;
 
 namespace WindowsDeviceManager
@@ -36,9 +33,11 @@ namespace WindowsDeviceManager
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
+                    // Dispose managed state (managed objects).
+                    // Nothing here yet, but there could be in the future.
                 }
 
+                // Correctly dispose of the information set handle.
                 if (_handle != IntPtr.Zero)
                 {
                     SetupDi.DestroyDeviceInfoList(_handle);
@@ -66,18 +65,27 @@ namespace WindowsDeviceManager
 
         private IntPtr _handle = IntPtr.Zero;
 
+        /// <summary>
+        /// Creates a new device information set.
+        /// </summary>
+        /// <param name="handle">An unmanaged handle representing the device information set.</param>
         internal DeviceInfoSet(IntPtr handle)
         {
-
-
             _handle = handle;
         }
 
+        /// <summary>
+        /// Gets an unmanaged handle representing the device information set.
+        /// </summary>
         internal IntPtr InfoSet
         {
             get { return _handle; }
         }
 
+        /// <summary>
+        /// Gets an enumerator that allows all devices in the <see cref="DeviceInfoSet"/> to be accessed.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{DeviceInfo}"/> containing all devices in the information set.</returns>
         public IEnumerable<DeviceInfo> GetDevices()
         {
             for (var index = 0; ; ++index)
@@ -85,9 +93,38 @@ namespace WindowsDeviceManager
                 DeviceInfo deviceInfo;
                 if (!SetupDi.EnumDeviceInfo(this, index, out deviceInfo))
                 {
-                    if (ErrorHelpers.GetLastError() != ErrorCode.NoMoreItems)
+                    // When enumerating past the end of the set, a specific error will be returned.
+                    // Any other error is unexpected and should be reported.
+                    var lastError = ErrorHelpers.GetLastError();
+                    if (lastError != ErrorCode.NoMoreItems)
                     {
-                        throw new DeviceManagerWindowsException("Unable to enumerate devices.");
+                        throw ErrorHelpers.CreateException(lastError, "Unable to enumerate devices.");
+                    }
+
+                    yield break;
+                }
+
+                yield return deviceInfo;
+            }
+        }
+
+        /// <summary>
+        /// Gets an enumerator that allows all devices in the <see cref="DeviceInfoSet"/> to be accessed.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{DeviceInfo}"/> containing all devices in the information set.</returns>
+        public IEnumerable<DeviceInfo> GetDeviceInterfaces()
+        {
+            for (var index = 0; ; ++index)
+            {
+                DeviceInfo deviceInfo;
+                if (!SetupDi.EnumDeviceInfo(this, index, out deviceInfo))
+                {
+                    // When enumerating past the end of the set, a specific error will be returned.
+                    // Any other error is unexpected and should be reported.
+                    var lastError = ErrorHelpers.GetLastError();
+                    if (lastError != ErrorCode.NoMoreItems)
+                    {
+                        throw ErrorHelpers.CreateException(lastError, "Unable to enumerate devices.");
                     }
 
                     yield break;

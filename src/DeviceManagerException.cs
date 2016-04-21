@@ -17,6 +17,7 @@
 ***************************************************************************/
 
 using System;
+using System.Runtime.Serialization;
 
 namespace WindowsDeviceManager
 {
@@ -39,6 +40,11 @@ namespace WindowsDeviceManager
 
         public DeviceManagerException(Exception innerException, string format, params object[] args)
             : base(string.Format(format, args), innerException)
+        {
+        }
+
+        protected DeviceManagerException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }

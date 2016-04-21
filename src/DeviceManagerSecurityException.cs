@@ -17,22 +17,36 @@
 ***************************************************************************/
 
 using System;
+using System.Runtime.Serialization;
+using System.Security;
 
-namespace WindowsDeviceManager.Api
+namespace WindowsDeviceManager
 {
-    [Flags]
-    public enum DeviceCapabilities : uint
+    public class DeviceManagerSecurityException : DeviceManagerException
     {
-        None = 0x000,
-        LockSupported = 0x001,
-        EjectSupported = 0x002,
-        Removeable = 0x004,
-        DockDevice = 0x008,
-        UniqueId = 0x010,
-        SilentInstall = 0x020,
-        RawDeviceOk = 0x040,
-        SurpriseRemovalOk = 0x080,
-        HardwareDisabled = 0x100,
-        NonDynamic = 0x200,
+        public DeviceManagerSecurityException(string message)
+            : base(message)
+        {
+        }
+
+        public DeviceManagerSecurityException(string format, params object[] args)
+            : base(format, args)
+        {
+        }
+
+        public DeviceManagerSecurityException(Exception innerException, string message)
+            : base(innerException, message)
+        {
+        }
+
+        public DeviceManagerSecurityException(Exception innerException, string format, params object[] args)
+            : base(innerException, format, args)
+        {
+        }
+
+        protected DeviceManagerSecurityException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
+        {
+        }
     }
 }

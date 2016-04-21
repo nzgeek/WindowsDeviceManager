@@ -22,7 +22,7 @@ using WindowsDeviceManager.ValueConverters;
 
 namespace WindowsDeviceManager
 {
-    public class DevicePropertyValue : PropertyValue<DevicePropertyKey, DevicePropertyType>
+    public class DevicePropertyValue : PropertyValue<DeviceInfo, DevicePropertyKey, DevicePropertyType>
     {
         #region Default converter registration
 
@@ -46,22 +46,45 @@ namespace WindowsDeviceManager
 
         #endregion
 
+        /// <summary>
+        /// Constructs a device property value.
+        /// </summary>
+        /// <param name="key">The device property key that this value relates to.</param>
         public DevicePropertyValue(DevicePropertyKey key)
             : base(key)
         {
         }
 
-        protected override bool LoadValue(DeviceInfo deviceInfo, out DevicePropertyType propertyType, out Api.Buffer buffer)
+        /// <summary>
+        /// Reads the value of the property from the specified device.
+        /// </summary>
+        /// <param name="deviceInfo">The device to read the property from.</param>
+        /// <param name="propertyType">Receives the data type of the property.</param>
+        /// <param name="buffer">Receives the raw data that contain the property value.</param>
+        /// <returns>
+        /// Returns <c>true</c> if the property was read successfully, or <c>false</c> if the property is not
+        /// available for the specified device.
+        /// </returns>
+        /// <exception cref="DeviceManagerSecurityException">
+        /// Thrown if the property value cannot be read due to the user having insufficient access rights.
+        /// </exception>
+        /// <exception cref="DeviceManagerWindowsException">
+        /// Throw if an unexpected error occurs while trying to read the value.
+        /// </exception>
+        protected override bool ReadValue(DeviceInfo deviceInfo, out DevicePropertyType propertyType,
+            out Api.Buffer buffer)
         {
             if (!SetupDi.GetDeviceProperty(deviceInfo, Key, out propertyType, out buffer))
             {
                 // Only "not found" errors are valid failures.
                 var lastError = ErrorHelpers.GetLastError();
                 if (lastError == ErrorCode.NotFound)
+                {
                     return false;
+                }
 
                 // Everything else is an unexpected failure.
-                throw new DeviceManagerWindowsException("Unable to query device property.");
+                throw ErrorHelpers.CreateException(lastError, "Unable to query device property.");
             }
 
             return true;

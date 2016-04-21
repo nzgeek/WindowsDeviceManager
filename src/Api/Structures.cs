@@ -96,4 +96,131 @@ namespace WindowsDeviceManager.Api
                 x => x.reserved);
         }
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SP_DEVICE_INTERFACE_DATA
+    {
+        /// <summary>
+        /// The size, in bytes, of the <see cref="SP_DEVICE_INTERFACE_DATA"/> structure.
+        /// </summary>
+        public Int32 cbSize;
+
+        /// <summary>
+        /// The GUID for the class to which the device interface belongs.
+        /// </summary>
+        public Guid interfaceClassGuid;
+
+        /// <summary>
+        /// Flags that describe the device interface.
+        /// </summary>
+        [MarshalAs(UnmanagedType.U4)]
+        public DeviceInterfaceFlags flags;
+
+        /// <summary>
+        /// Reserved. For internal use only.
+        /// </summary>
+        public UIntPtr reserved;
+
+        /// <summary>
+        /// Initializes the structure to an empty value.
+        /// </summary>
+        public void Initialize()
+        {
+            cbSize = Marshal.SizeOf(this);
+            interfaceClassGuid = Guid.Empty;
+            flags = DeviceInterfaceFlags.SPINT_NONE;
+            reserved = UIntPtr.Zero;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ObjectHelpers.Equals(this, obj,
+                x => x.cbSize,
+                x => x.interfaceClassGuid,
+                x => x.flags,
+                x => x.reserved);
+        }
+
+        public override int GetHashCode()
+        {
+            return ObjectHelpers.GetHashCode(this,
+                x => x.cbSize,
+                x => x.interfaceClassGuid,
+                x => x.flags,
+                x => x.reserved);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SP_CLASSINSTALL_HEADER
+    {
+        public int cbSize;
+
+        [MarshalAs(UnmanagedType.U4)]
+        public DeviceInstallFunction installFunction;
+
+        public void Initialize(DeviceInstallFunction installFunction)
+        {
+            cbSize = Marshal.SizeOf(typeof(SP_CLASSINSTALL_HEADER));
+            this.installFunction = installFunction;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ObjectHelpers.Equals(this, obj,
+                x => x.cbSize,
+                x => x.installFunction);
+        }
+
+        public override int GetHashCode()
+        {
+            return ObjectHelpers.GetHashCode(this,
+                x => x.cbSize,
+                x => x.installFunction);
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SP_PROPCHANGE_PARAMS
+    {
+        public SP_CLASSINSTALL_HEADER classInstallHeader;
+
+        [MarshalAs(UnmanagedType.U4)]
+        public DevicePropertyChangeState stateChange;
+
+        [MarshalAs(UnmanagedType.U4)]
+        public DevicePropertyChangeScope scope;
+
+        public UInt32 hwProfile;
+
+        public void Initialize(DevicePropertyChangeState stateChange,
+            DevicePropertyChangeScope scope = DevicePropertyChangeScope.DICS_FLAG_CONFIGSPECIFIC,
+            uint hwProfile = 0)
+        {
+            classInstallHeader = new SP_CLASSINSTALL_HEADER();
+            classInstallHeader.Initialize(DeviceInstallFunction.DIF_PROPERTYCHANGE);
+
+            this.stateChange = stateChange;
+            this.scope = scope;
+            this.hwProfile = hwProfile;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ObjectHelpers.Equals(this, obj,
+                x => x.classInstallHeader,
+                x => x.stateChange,
+                x => x.scope,
+                x => x.hwProfile);
+        }
+
+        public override int GetHashCode()
+        {
+            return ObjectHelpers.GetHashCode(this,
+                x => x.classInstallHeader,
+                x => x.stateChange,
+                x => x.scope,
+                x => x.hwProfile);
+        }
+    }
 }

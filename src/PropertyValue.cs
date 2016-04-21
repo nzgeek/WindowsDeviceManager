@@ -22,10 +22,19 @@ using WindowsDeviceManager.ValueConverters;
 
 namespace WindowsDeviceManager
 {
-    public abstract class PropertyValue<TPropertyKey, TPropertyType>
+    /// <summary>
+    /// A base class for dealing with unmanaged property values for Windows device manager objects.
+    /// </summary>
+    /// <typeparam name="TObject">The type of object that properties belong to.</typeparam>
+    /// <typeparam name="TPropertyKey">The type of object used as a key for properties.</typeparam>
+    /// <typeparam name="TPropertyType">A type that helps identify the type of data stored in a value.</typeparam>
+    public abstract class PropertyValue<TObject, TPropertyKey, TPropertyType>
     {
         #region Value converter registry
 
+        /// <summary>
+        /// Gets the value converter registry for the current property type.
+        /// </summary>
         public static ValueConverterRegistry<TPropertyType> ConverterRegistry { get; private set; }
 
         static PropertyValue()
@@ -58,26 +67,38 @@ namespace WindowsDeviceManager
         public TPropertyType ValueType { get; set; }
 
         /// <summary>
-        /// 
+        /// The value of the property.
         /// </summary>
+        /// <remarks>
+        /// If a converter is registered for the property's value type, the value should be of the corresponding
+        /// managed type. If no such converter is registered, the value should be a <see cref="byte[]"/> containing the
+        /// data in its unmanaged representation.
+        /// </remarks>
         public object Value { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets the value converted to the specified type.
         /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <returns></returns>
+        /// <typeparam name="TValue">The type of value to be retrieved.</typeparam>
+        /// <returns>The value converted to the specified type.</returns>
+        /// <remarks>
+        /// An exception may be thrown if the underlying value cannot be converted to the target type.
+        /// </remarks>
         public TValue GetValue<TValue>()
         {
             return ConversionHelpers.Convert<TValue>(Value);
         }
 
         /// <summary>
-        /// 
+        /// Gets the property value converted to the specified type, falling back to a default value if the conversion
+        /// was unsuccessful.
         /// </summary>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
+        /// <typeparam name="TValue">The type of value to be retrieved.</typeparam>
+        /// <param name="defaultValue">The value to return if conversion fails.</param>
+        /// <returns>
+        /// The value converted to the specified type, or <paramref name="defaultValue"/> if the property value could
+        /// not successfully be converted.
+        /// </returns>
         public TValue GetValue<TValue>(TValue defaultValue)
         {
             TValue value;
@@ -88,18 +109,27 @@ namespace WindowsDeviceManager
         }
 
         /// <summary>
-        /// 
+        /// Reads the property value from the specified object.
         /// </summary>
-        /// <param name="deviceInfo"></param>
-        /// <returns></returns>
-        public bool LoadValue(DeviceInfo deviceInfo)
+        /// <param name="obj">The object to read the property value from.</param>
+        /// <returns>
+        /// Returns <c>true</c> if the property was read successfully, or <c>false</c> if the property is not
+        /// available for the specified object.
+        /// </returns>
+        /// <exception cref="DeviceManagerSecurityException">
+        /// Thrown if the property value cannot be read due to the user having insufficient access rights.
+        /// </exception>
+        /// <exception cref="DeviceManagerException">
+        /// Throw if an unexpected error occurs while trying to read the value.
+        /// </exception>
+        public bool ReadValue(TObject obj)
         {
-            deviceInfo.ThrowIfNull("deviceInfo");
+            obj.ThrowIfNull("obj");
 
             TPropertyType propertyType;
             Api.Buffer buffer;
 
-            if (!LoadValue(deviceInfo, out propertyType, out buffer))
+            if (!ReadValue(obj, out propertyType, out buffer))
             {
                 return false;
             }
@@ -136,12 +166,21 @@ namespace WindowsDeviceManager
         }
 
         /// <summary>
-        /// 
+        /// Reads the value of the property from the specified object.
         /// </summary>
-        /// <param name="deviceInfo"></param>
-        /// <param name="propertyType"></param>
-        /// <param name="buffer"></param>
-        /// <returns></returns>
-        protected abstract bool LoadValue(DeviceInfo deviceInfo, out TPropertyType propertyType, out Api.Buffer buffer);
+        /// <param name="obj">The object to read the property from.</param>
+        /// <param name="propertyType">Receives the data type of the property.</param>
+        /// <param name="buffer">Receives the raw data that contain the property value.</param>
+        /// <returns>
+        /// Returns <c>true</c> if the property was read successfully, or <c>false</c> if the property is not
+        /// available for the specified object.
+        /// </returns>
+        /// <exception cref="DeviceManagerSecurityException">
+        /// Thrown if the property value cannot be read due to the user having insufficient access rights.
+        /// </exception>
+        /// <exception cref="DeviceManagerException">
+        /// Throw if an unexpected error occurs while trying to read the value.
+        /// </exception>
+        protected abstract bool ReadValue(TObject obj, out TPropertyType propertyType, out Api.Buffer buffer);
     }
 }

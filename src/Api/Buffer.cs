@@ -69,9 +69,25 @@ namespace WindowsDeviceManager.Api
         }
         #endregion
 
+        /// <summary>
+        /// A pointer to the unmanaged memory region.
+        /// </summary>
         private IntPtr _buffer = IntPtr.Zero;
+
+        /// <summary>
+        /// The amount of memory currently allocated.
+        /// </summary>
         private int _allocatedLength = 0;
+
+        /// <summary>
+        /// The amount of memory currently advertised as being allocated.
+        /// </summary>
         private int _length = 0;
+
+        /// <summary>
+        /// If a structure is marshaled into unmanaged memory, this holds the type of that structure.
+        /// </summary>
+        private Type _structureType = null;
 
         /// <summary>
         /// Creates a new, empty buffer.
@@ -104,11 +120,21 @@ namespace WindowsDeviceManager.Api
         /// Resizes the buffer to the indicated length in bytes.
         /// </summary>
         /// <param name="length">The new length of the buffer, in bytes.</param>
-        /// <remarks>After resizing, the buffer may or may not point to a new piece of unmanaged memory.</remarks>
+        /// <remarks>
+        /// After resizing, the buffer may point to a new block of unmanaged memory. If a new unmanaged memory block is
+        /// used, the contents of the memory are not copied across.
+        /// </remarks>
         public void Resize(int length)
         {
             if (length < 0 || length > MaxAllocationSize)
                 throw new ArgumentOutOfRangeException("length", "Invalid buffer length.");
+
+            // If the memory currently holds a marshaled structure, destroy it.
+            if (_structureType != null)
+            {
+                Marshal.DestroyStructure(_buffer, _structureType);
+                _structureType = null;
+            }
 
             // If the amount needed is more than what's currently available, allocate a bigger block.
             if (length > _allocatedLength)
@@ -147,6 +173,11 @@ namespace WindowsDeviceManager.Api
                 throw new ArgumentOutOfRangeException("length", "Invalid truncated length.");
             }
 
+            if (_structureType != null)
+            {
+                throw new InvalidOperationException("Cannot truncate the length of a structure.");
+            }
+
             _length = length;
         }
 
@@ -157,11 +188,20 @@ namespace WindowsDeviceManager.Api
         {
             if (_buffer != IntPtr.Zero)
             {
-                _length = 0;
-                _allocatedLength = 0;
+                // If the memory currently holds a marshaled structure, destroy it.
+                if (_structureType != null)
+                {
+                    Marshal.DestroyStructure(_buffer, _structureType);
+                    _structureType = null;
+                }
 
+                // Free the unmanaged memory.
                 Marshal.FreeHGlobal(_buffer);
                 _buffer = IntPtr.Zero;
+
+                // Set the length to zero.
+                _length = 0;
+                _allocatedLength = 0;
             }
         }
 
@@ -259,6 +299,24 @@ namespace WindowsDeviceManager.Api
 
             for (var i = 0; i < length; ++i)
                 Marshal.WriteByte(_buffer, i, value[offset + i]);
+        }
+
+        /// <summary>
+        /// Copies a structure to an unmanaged block of memory.
+        /// </summary>
+        /// <typeparam name="TStruct">The type of structure to copy.</typeparam>
+        /// <param name="value">The structure to copy.</param>
+        public void CopyStructure<TStruct>(TStruct value)
+            where TStruct : struct
+        {
+            // Ensure there's enough allocated memory to hold the structure.
+            Resize(Marshal.SizeOf(value));
+
+            // Remember the type of structure. This will be needed later.
+            _structureType = typeof(TStruct);
+
+            // Copy the contents to the unmanaged memory.
+            Marshal.StructureToPtr(value, _buffer, false);
         }
     }
 }

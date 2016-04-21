@@ -41,26 +41,24 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Api\ExternalApi.cs" />
+    <Compile Include="Api\Enums.cs" />
+    <Compile Include="Api\ExternalApiExtensions.cs" />
     <Compile Include="Api\WrappedApi.cs" />
     <Compile Include="Api\Buffer.cs" />
-    <Compile Include="Api\ConfigurationFlags.cs" />
-    <Compile Include="Api\DeviceCapabilities.cs" />
     <Compile Include="Api\Errors.cs" />
-    <Compile Include="Api\DeviceRegistryPropertyCode.cs" />
-    <Compile Include="Api\GetClassDevsFlags.cs" />
-    <Compile Include="Api\Constants.cs" />
     <Compile Include="Api\RawApi.cs" />
-    <Compile Include="Api\StructureExtensions.cs" />
     <Compile Include="Api\Structures.cs" />
     <Compile Include="DeviceInfo.cs" />
     <Compile Include="DeviceInfoSet.cs" />
+    <Compile Include="DeviceInterface.cs" />
     <Compile Include="DeviceInterfaceClasses.cs" />
     <Compile Include="DeviceManager.cs" />
     <Compile Include="DeviceManagerException.cs" />
+    <Compile Include="DeviceManagerSecurityException.cs" />
     <Compile Include="DeviceManagerWindowsException.cs" />
     <Compile Include="DevicePropertyKey.cs" />
     <Compile Include="DevicePropertyKeys.cs" />
+    <Compile Include="DeviceInterfacePropertyValue.cs" />
     <Compile Include="DeviceRegistryPropertyKey.cs" />
     <Compile Include="DeviceRegistryPropertyKeys.cs" />
     <Compile Include="DeviceRegistryPropertyValue.cs" />

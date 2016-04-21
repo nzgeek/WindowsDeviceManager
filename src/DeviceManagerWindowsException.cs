@@ -17,59 +17,37 @@
 ***************************************************************************/
 
 using System;
+using System.ComponentModel;
+using System.Runtime.Serialization;
 using WindowsDeviceManager.Api;
 
 namespace WindowsDeviceManager
 {
-    public class DeviceManagerWindowsException : DeviceManagerException
+    public class DeviceManagerWindowsException : Win32Exception
     {
-        private const string ErrorCodeKey = "WindowsErrorCode";
-        private const string ErrorMessageKey = "WindowsErrorMessage";
-
         public DeviceManagerWindowsException(string message)
-            : base(message)
+            : base(ErrorHelpers.GetLastError(), message)
         {
-            Initialize();
         }
 
         public DeviceManagerWindowsException(string format, params object[] args)
-            : base(format, args)
+            : base(ErrorHelpers.GetLastError(), string.Format(format, args))
         {
-            Initialize();
         }
 
-        public DeviceManagerWindowsException(Exception innerException, string message)
-            : base(innerException, message)
+        public DeviceManagerWindowsException(int errorCode, string message)
+            : base(errorCode, message)
         {
-            Initialize();
         }
 
-        public DeviceManagerWindowsException(Exception innerException, string format, params object[] args)
-            : base(innerException, format, args)
+        public DeviceManagerWindowsException(int errorCode, string format, params object[] args)
+            : base(errorCode, string.Format(format, args))
         {
-            Initialize();
         }
 
-        private void Initialize()
+        protected DeviceManagerWindowsException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
-            int lastError = ErrorHelpers.GetLastError();
-            Data[ErrorCodeKey] = lastError;
-            Data[ErrorMessageKey] = ErrorHelpers.GetErrorMessage(lastError);
-        }
-
-        public int WindowsErrorCode
-        {
-            get { return (int)Data[ErrorCodeKey]; }
-            set
-            {
-                Data[ErrorCodeKey] = value;
-                Data[ErrorMessageKey] = ErrorHelpers.GetErrorMessage(value);
-            }
-        }
-
-        public string WindowsErrorMessage
-        {
-            get { return (string)Data[ErrorMessageKey]; }
         }
     }
 }
